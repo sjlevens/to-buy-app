@@ -13,7 +13,7 @@ class ToBuyTracker extends StatelessWidget {
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(title: 'To Buy Home Page'),
+      home: MyHomePage(title: 'To Buy'),
     );
   }
 }
