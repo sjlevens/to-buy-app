@@ -47,17 +47,28 @@ class _ToBuyItemWidgetState extends State<ToBuyItemWidget> {
   Widget build(BuildContext context) {
     return _isDeleted
         ? SizedBox.shrink()
-        : Row(
-            children: <Widget>[
-              FlatButton(
-                child: Text(widget.toBuyText),
-                onPressed: _toggleActive,
-              ),
-              _isActive
-                  ? IconButton(icon: Icon(Icons.remove), onPressed: _delete)
-                  : SizedBox.shrink()
-            ],
-          );
+        : Container(
+            height: 50,
+            child: Stack(
+              overflow: Overflow.visible,
+              children: <Widget>[
+                GestureDetector(
+                  onTap: _toggleActive,
+                  child: Chip(label: Text(widget.toBuyText)),
+                ),
+                Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Opacity(
+                        opacity: _isActive ? 1 : 0,
+                        child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: IconButton(
+                                icon: Icon(Icons.remove_circle, size: 16),
+                                onPressed: _delete))))
+              ],
+            ));
   }
 }
 
@@ -77,9 +88,9 @@ class _MyHomePageState extends State<MyHomePage> {
   var _sometime = [];
   var _addToSelect = 'now';
 
-  void _changeInputText(newText) {
+  void _updateInputText(text) {
     setState(() {
-      _inputText = newText;
+      _inputText = text;
     });
   }
 
@@ -122,8 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(widget.title),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+        child: ListView(
           children: <Widget>[
             Container(
               child: Row(
@@ -136,19 +146,19 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: Text('NOW'),
                           onPressed: _setAddToSelect('now'),
                           color: _addToSelect == 'now'
-                              ? Colors.blue
+                              ? Colors.green
                               : Colors.blueGrey),
                       FlatButton(
                           child: Text('SOON'),
                           onPressed: _setAddToSelect('soon'),
                           color: _addToSelect == 'soon'
-                              ? Colors.blue
+                              ? Colors.green
                               : Colors.blueGrey),
                       FlatButton(
                           child: Text('SOMETIME'),
                           onPressed: _setAddToSelect('sometime'),
                           color: _addToSelect == 'sometime'
-                              ? Colors.blue
+                              ? Colors.green
                               : Colors.blueGrey),
                     ],
                   )
@@ -157,28 +167,24 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             Container(
                 padding: const EdgeInsets.all(32),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: TextField(
-                        decoration: InputDecoration(
-                            border: InputBorder.none,
-                            hintText: "Enter something to buy"),
-                        onChanged: _changeInputText,
-                      ),
-                    ),
-                    IconButton(
-                        icon: Icon(Icons.add),
-                        tooltip: 'Add now',
-                        onPressed: _addTo()),
-                  ],
+                child: TextField(
+                  onChanged: _updateInputText,
+                  decoration: InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "Enter something to buy",
+                      suffixIcon: IconButton(
+                          icon: Icon(Icons.add),
+                          tooltip: 'Add now',
+                          onPressed: _inputText.length >= 1 ? _addTo() : null)),
                 )),
             Container(
+              padding: const EdgeInsets.all(32),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  _buildToBuyColumn(_now),
-                  _buildToBuyColumn(_soon),
-                  _buildToBuyColumn(_sometime)
+                  Expanded(child: _buildToBuyColumn(_now, 'Now')),
+                  Expanded(child: _buildToBuyColumn(_soon, 'Soon')),
+                  Expanded(child: _buildToBuyColumn(_sometime, 'Sometime'))
                 ],
               ),
             )
@@ -188,19 +194,15 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _buildToBuyItem(item) {
-    return Container(
-        child: ToBuyItemWidget(
-      toBuyText: item,
-    ));
-  }
-
-  Widget _buildToBuyColumn(toBuyList) {
+  Widget _buildToBuyColumn(toBuyList, title) {
     return Column(
-        children: toBuyList
-            .map<Widget>((toBuy) => Container(
-                  child: _buildToBuyItem(toBuy),
-                ))
-            .toList());
+        mainAxisAlignment: MainAxisAlignment.start,
+        verticalDirection: VerticalDirection.down,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.bold)),
+          ...toBuyList
+              .map<Widget>((toBuy) => ToBuyItemWidget(toBuyText: toBuy))
+              .toList()
+        ]);
   }
 }
